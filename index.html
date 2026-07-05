@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<heml lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会計管理</title>
+    <!-- 以下の二行でライブラリを追加て感じ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+<!-- pは内側の余白、mは外側の余白。これにt, b, x, y,で座標の向きを指定できる -->
+<!-- grid-col-1:基本は縦に1列に並べる md:grid-cols-3 パソコンとかは横に3列で並べる -->
+    <header class="bg-slate-900 text-white py-6 px-4 shadow-md mb-8">
+            <h1 class="text-2xl font-black tracking-wider text-emerald-400">会計管理</h1>
+            <!-- ボタンで中身が空の項目ボックスを作成 -->
+            <div class="flex gap-2 mt-5">
+                <button onclick="openMemberModal()" class="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
+                    メンバー管理
+                </button>
+                <button onclick="openItemModal()" class="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
+                    項目を追加
+                </button>
+            </div>
+            <!-- <span class="text-xs bg-slate-800 px-3 py-1 rounded-full border border-slate-700">サーバー不要 / 完全ローカル動作</span> -->
+        </header>
+
+    <!-- たぶ構造の作成 -->
+    <div class="max-w-5xl mx-auto px-4 mt-6 flex gap-2 border-b border-slate-200">
+        <button id="tab_input_btn" onclick="switchTab('input')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-emerald-600 transition-all cursor-pointer">
+            入力
+        </button>
+        <button id="tab_result_btn" onclick="switchTab('result')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-emerald-600 transition-all cursor-pointer">
+            結果
+        </button>
+    </div>
+
+    <main id="room_input" class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-bold mb-$ flex items-center gap-2">
+                精算したいもの一覧
+            </h2>
+            <div id="items_container" class="space-y-4"></div>
+        </section>
+    </main>
+
+    <main id="room_result" class="hidden max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-bold mb-$ flex items-center gap-2">
+                精算
+            </h2>
+            <div id="settlement_container" class="space-y-2 text-sm font-medium text-slate-700">
+                <p class="text-slate-400 text-xs italic">データを入力するとリアルタイムで精算ルートを計算</p>
+            </div>
+        </section>
+        
+        <div class="flex flex-col sm:flex-row gap-2 mt-4">
+            <input type="text" id="excel_filename" placeholder="ファイル名"
+                class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none flex-1">
+
+            <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-500 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform hover:-transrate-y-0.5 cursor-pointer text-sm">
+                精算表.xlsxをダウンロード
+            </button>
+        </div>
+    </main>
+
+    <script>
+
+        // ここからJavaScript
+
+        // タブ切り替え
+        function switchTab(tabName) {
+            const roomInput = document.getElementById('room_input');
+            const roomResult = document.getElementById('room_result');
+            const btnInput = document.getElementById('tab_input_btn');
+            const btnResult = document.getElementById('tab_result_btn');
+
+            if (tabName === 'input') {
+                // 入力画面表示
+                roomInput.classList.remove('hidden');
+                roomResult.classList.add('hidden');
+                // ボタンの見た目をいい感じに
+                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+            } else {
+                // 結果画面表示
+                roomResult.classList.remove('hidden');
+                roomInput.classList.add('hidden');
+                // ボタンの見た目をいい感じに
+                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+            }
+        }
+
+        // 計算部分をwebとexcelで共通化
+        function csh(item) {
+            let shares = Array(members.length).fill(0);
+            if (item.total === 0) return shares;
+
+            // 入力されたメンバーの設定を抽出
+            let settings = members.map(m => {
+                if (item.settings === undefined) return 1;
+                return item.settings[m] !== undefined ? item.settings[m] : 1;
+            });
+
+            // 固定額の人が払う合計金額を算出
+            let fixedTotal = settings.reduce((sum, x) => {
+                return (typeof x === "object" && x.type === "fixed") ? sum + x.amount : sum;
+            }, 0);
+
+            // 山分けにする人が何人いるのか数える
+            let splitCount = settings.filter(x => x === "split").length;
+
+            // 総額から固定がくを引いた残りの金額
+            let splitTotal = item.total - fixedTotal;
+
+            let totalRatio = settings.reduce((sum, x) => {
+                return (x !== "absent" && typeof x !== "object") ? sum + x : sum;
+            }, 0);
+
+            // 割り勘する人がいなかったり、そうひりつ0ならここで終わる
+            if (totalRatio <= 0 || splitTotal <= 0)  {
+                // 固定額の人だけの金額
+                for (let i = 0; i < settings.length; i++) {
+                    if (typeof settings[i] === "object" && settings[i].type === "fixed") {
+                        shares[i] = settings[i].amount;
+                    }
+                }
+                return shares;
+            }
+
+            // 1倍あたりのベース金額を計算
+            let baseAmountPerRatio = Math.floor(splitTotal / totalRatio);
+
+            // 比率を掛け算して支払い金額の決定
+            let currentTotal = 0;
+            for (let i = 0;i < settings.length; i++) {
+                    let mode = settings[i];
+
+                    if (mode === "absent") {
+                        shares[i] = 0;
+                    } else if (typeof mode === "object" && mode.type === "fixed") {
+                        shares[i] = mode.amount;
+                    } else {
+                        // ここが割り勘
+                        shares[i] = Math.floor(baseAmountPerRatio * mode);
+                        currentTotal += shares[i];
+                    }
+                }
+                let remSplit = splitTotal - (currentTotal - fixedTotal);
+                // 端数の凝ってたら上から1円ずつ配る
+                if (remSplit > 0) {
+                    for (let i = 0; i < settings.length; i++) {
+                        let mode = settings[i];
+                        if (mode !== "absent" && typeof mode !== "object" && remSplit > 0) {
+                            shares[i] += 1;
+                            remSplit--;
+                        }
+                    }
+                }
+                return shares;
+        }
+
+        
+        // webの方で計算
+        function calculateSettlement() {
+            // 全員の貸し借りを0で初期化
+            let balances = Object.fromEntries(members.map(m => [m, 0]));
+            
+            // 各項目の割り勘を計算
+            items.forEach(item=> {
+                if (item.total === 0) return;
+
+                // 計算
+                let shares = csh(item);
+
+                // 結果を残高に反映させる
+                for (let i = 0; i < members.length; i++) {
+                    balances[members[i]] -= shares[i];
+                }  
+                
+                // 立替額を足す処理
+                if  (balances.hasOwnProperty(item.payer)) {
+                    balances[item.payer] += item.total;
+                }
+            });
+
+        // もらう人と払う人のグループにわける
+        let givers = [];
+        let receivers = [];
+
+        for (let m in balances) { 
+            if (balances[m] < -0.1) {
+                givers.push({ name: m, amount: -balances[m] });
+            } else if (balances[m] > 0.1) {
+                receivers.push({ name: m, amount: balances[m] });
+            }
+        }
+
+        // 貪欲法を採用
+        let routes = [];
+        let gIdx =0, rIdx = 0;
+
+        while (gIdx < givers.length && rIdx < receivers.length) {
+            let giver = givers[gIdx];
+            let receiver = receivers[rIdx];
+
+            // 動かす金額は、払いたいがくともらいたい額のうち小さい方
+            let transfer = Math.min(giver.amount, receiver.amount);
+
+            if (transfer > 0) {
+                routes.push(`
+                    <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                        <span class="font-bold text-slate-700">${giver.name}</span>
+                        <span class="text-xs text-slate-400 font-bold mx-2"> → </span>
+                        <span class="font-bold text-emerald-600">${receiver.name}</span>
+                        <span class="ml-auto font-black text-slate-900">${transfer.toLocaleString()} 円</span>
+                    </div>
+                `);
+            }
+
+            giver.amount -= transfer;
+            receiver.amount -= transfer;
+
+            if (giver.amount < 0.1) gIdx++;
+            if (receiver.amount < 0.1) rIdx++;
+        }
+
+            // 算出したルートを表示
+        const container = document.getElementById('settlement_container');
+
+        if (routes.length === 0) {
+            container.innerHTML = `<p class="text-slate-400 text-xs italic"> 貸し借りは発生していません </p>`;
+        } else {
+            container.innerHTML = routes.join('');
+        }
+    }
+
+        // メンバーの初期リスト
+        let members = ["メンバー1", "メンバー2", "メンバー3"]
+
+        // メンバーポップアップ
+        function openMemberModal() {
+            document.getElementById('member_modal').classList.remove('hidden')
+            renderModalMembers()
+        }
+
+        // メンバーポップアップを閉じる
+        function closeMemberModal() {
+            document.getElementById('member_modal').classList.add('hidden');
+            renderModalMembers()
+        }
+
+        // メンバーポップアップをの中に一覧を表示
+        function renderModalMembers() {
+            const listContainer = document.getElementById('modal_member_list');
+            listContainer.innerHTML = '';
+
+            members.forEach((member, index) => {
+                const rowHtml = `
+                <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
+                    <span class="font-medium text-slate-700">${member}</span>
+                    <button onclick="removeMember(${index})" class="text-rose-500 hover:text-rose-700 font-bold px-2 text-sm cursor-pointer">削除</button>
+                </div>
+            `;
+            listContainer.insertAdjacentHTML('beforeend', rowHtml);
+            });
+
+        }
+
+        // メンバーを新しくリストに追加
+        function addMember() {
+            const input = document.getElementById('new_member_name');
+            const name = input.value.trim();
+            // 空なら何もしない
+            if (name === '') return;
+
+            // メンバーの重複チェック
+            if (members.includes(name)) {
+                alert('その名前はすでに登録されてるよ！');
+                return;
+            }
+
+            members.push(name);
+            // 入力欄をからに戻す
+            input.value = '';
+            renderModalMembers();
+        }
+
+        // メンバーを削除する
+        function removeMember(index) {
+            // 指定番目を1人削除
+            members.splice(index, 1)
+            renderModalMembers();
+        }
+
+        // 割り勘のモードが切り替わった時
+        function updateMemberMode(itemIndex, memberName, mode) {
+            if (items[itemIndex].settings === undefined) {
+                items[itemIndex].settings = {};
+            }
+
+            if (mode === "split") {
+                // 割り勘になったら比率1倍
+                items[itemIndex].settings[memberName] = 1;
+            } else if (mode === "absent") {
+                items[itemIndex].settings[memberName] = "absent";
+            } else {
+                // 固定額の初期値は０円にする
+                items[itemIndex].settings[memberName] = { type: "fixed", amount: 0 };
+            }
+            renderItems();
+            calculateSettlement();
+        }
+
+        // 固定額の金額が打ち込まれた時の処理
+        function updateMemberFixedAmount(itemIndex, memberName, value) {
+            let amt = parseInt(value) || 0;
+            items[itemIndex].settings[memberName] = { type: "fixed", amount: amt};
+            renderItems();
+            calculateSettlement();
+        }
+
+        // 割り勘の傾斜付き
+        function updateMemberRatio(itemIndex, memberName, value) {
+            // 小数点まで使える
+            let ratio = parseFloat(value) || 1.0;
+            // -の比率は0として扱う
+            if (ratio < 0) ratio = 0;
+            items[itemIndex].settings[memberName] = ratio;
+            renderItems();
+            calculateSettlement();
+        }
+
+        // 項目初期データ
+        let items = [
+            { id: 1, name: '須田誕', total: 15970, payer:'メンバー1', isEditing: false },
+            { id: 2, name: 'スシロー', total: 5640, payer:'メンバー1', isEditing: false },
+            { id: 3, name: 'ドミノピザ', total: 9398, payer:'メンバー1', isEditing: false }
+        ];
+
+        // 項目を削除
+        function removeItem(index) {
+            items.splice(index, 1);
+            renderItems();
+        }
+
+        // 項目ポップアップ開く
+        function openItemModal() {
+            // ポップアップの表示
+            document.getElementById('item_modal').classList.remove('hidden');
+            // 立替人のドロップダウンの選択肢
+            const payerSelect = document.getElementById('modal_item_payer');
+            payerSelect.innerHTML = members.map(m => `<option value="${m}">${m}</option>`).join('');
+            // 前回の入力をリセット
+            document.getElementById('modal_item_name').value = '';
+            document.getElementById('modal_item_total').value = '';
+        }
+
+        // 項目ポップアップ閉じる
+        function closeItemModal() {
+            document.getElementById('item_modal').classList.add('hidden');
+        }
+
+        // 入力された項目の追加
+        function saveNewItem() {
+            const nameInput = document.getElementById('modal_item_name');
+            const totalInput = document.getElementById('modal_item_total');
+            const payerSelect = document.getElementById('modal_item_payer');
+
+            const name = nameInput.value.trim();
+            const total = parseInt(totalInput.value) || 0;
+            const payer = payerSelect.value;
+
+            // 名前がと金額が空だとガード
+            if (name === '') {
+                alert('項目を入力してください！');
+                return;
+            }
+
+            items.push({
+                // idを時刻にすることで被らせない
+                id: Date.now(), 
+                name: name,
+                total: total, 
+                payer: payer,
+                isEditing: false,
+                settings: {}
+            });
+            // リストが増えたから、新しく画面を書き直す
+            renderItems();
+            closeItemModal();
+        }
+
+        // 項目のtrue/false
+        function toggleEdit(index) {
+            // おそらく！で反転できる
+            items[index].isEditing = !items[index].isEditing;
+            renderItems();
+            calculateSettlement();
+        }
+
+        // 画面を書く関数
+        function renderItems() {
+            const container = document.getElementById('items_container');
+            // 一回中身をリセット
+            container.innerHTML = '';
+
+            // パソコンとかの時は見やすいように横に列にする
+            container.className = "grid grid-cols-1 md:grid-cols-2 gap-6 space-y-0";
+
+            items.forEach((item, index) => {
+                // trueなら空に、falseならdisabeledと表示
+                // これって?がifだ多分
+                const isLocked = item.isEditing ? '' : 'disabled';
+                // falseなら入力欄はグレーにしておく
+                const inputBg = item.isEditing ? 'bg-white' : 'bg-slate-100 text-slate-500';
+
+                // 項目ごとにメンバーの情報を書き換えていく
+                let memberSettingsHtml = '';
+                members.forEach((member) => {
+                    // 初期値は1(割り勘)
+                    if (item.settings === undefined) item.settings = {};
+                    if (item.settings[member] === undefined) item.settings[member] = 1;
+
+                    let currentSetting = item.settings[member];
+
+                    // 今どのモードなのかを判定
+                    let isAbsent = currentSetting === "absent"
+                    let isFixed = (typeof currentSetting === "object" && currentSetting.type === "fixed");
+                    let isSplit = !isAbsent && !isFixed
+
+                    // 固定がくの時の金額、割り勘の傾斜を表示、それ以外は空を表示
+                    let fixedValue = isFixed ? currentSetting.amount : "";
+                    let ratioValue = isSplit ? currentSetting : "";
+
+                    // 特定の時だけ入力欄を表示
+                    let fixedVisible = isFixed ? "" : "hidden";
+                    let ratioVisible = isSplit ? "" : "hidden";
+
+                    memberSettingsHtml += `
+                    <div class="p-2 bg-slate-50 rounded-xl border border-slate-200/60 text-xs flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between gap-2 w-full">
+                            <span class="font-bold text-slate-600 truncate max-w-[75px]">${member}</span>
+
+                            <select ${isLocked} onchange="updateMemberMode(${index}, '${member}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-50 text-[11px] font-bold cursor-pointer">
+                                <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
+                                <option value="absent" ${isAbsent ? 'selected' : ''}>不参加</option>
+                                <option value="fixed" ${isFixed ? 'selected' : ''}>固定額</option>
+                            </select>
+                        </div>
+
+                        <div class="${fixedVisible} w-full">
+                            <div class="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-300 h-7">
+                                <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">比率:</span>
+                                <input type="number" step="0.1" value="${fixedValue}" placeholder="1" ${isLocked}
+                                    onchange="updateMemberRatio(${index}, '${member}', this.value)"
+                                    class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-emerald-700 focus:outline-none rounded-md text-[11px]">
+                                <span class="text-[10px] font-black text-emerald-600 pr-1.5 shrink-0">円</span>
+                            </div>
+                        </div>
+
+                        <div class="${ratioVisible} w-full">
+                            <div class="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-300 h-7">
+                                <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">比率:</span>
+                                <input type="number" step="0.1" value="${ratioValue}" placeholder="1" ${isLocked}
+                                    onchange="updateMemberRatio(${index}, '${member}', this.value)"
+                                    class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-emerald-700 focus:outline-none rounded-md text-[11px]">
+                                <span class="text-[10px] font-black text-emerald-600 pr-1.5 shrink-0">倍</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+                // メンバーの設定は、普段は隠しておく
+                const accordionClass = item.isEditing ? '' : 'hidden';
+
+                // 項目カード全体のHTML
+                // text-sm: ちょっと文字の大きさを小さくして綺麗に枠内に収める
+                // flex-colは縦並びにする箱
+                // members.map(m => ... ): 登録されているメンバー（m）を上から順番に取り出して、<option>名前</option> という選択肢のタグに変換しているよ。
+                const itemHtml = `
+                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 mb-1">項目名</label>
+                                <input type="text" value="${item.name}" ${isLocked} onchange="updateItem(${index}, 'name', this.value)" class="w-full p-2  border border-slate-300 rounded-lg text-sm ${inputBg}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-600 mb-1">金額</label>
+                                <input type="number" value="${item.total}" ${isLocked} onchange="updateItem(${index}, 'total', this.value)" class="w-full p-2 border border-slate-300 rounded-lg text-sm ${inputBg}">
+                            </div>
+                        </div>
+
+                    <div class="flex gap-2 items-end">
+                        <div class="flex-1">
+                            <label class="block text-xs font-black text-slate-500 mb-2">立替人</label>
+                            <select ${isLocked} onchange="updateItem(${index}, 'payer', this.value)" class="w-full p-2 border border-slate-300 rounded-lg  text-sm ${inputBg} cursor-pointer">
+                                ${members.map(m => `
+                                    <option value="${m}" ${item.payer === m ? 'selected' : ''}>${m}</option>
+                                `).join('')}
+                            </select>
+                        </div> 
+                        <button onclick="toggleEdit(${index})" class="bg-emerald-500 hover:bg-emerald-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs">
+                            ${item.isEditing ? '確定' : '編集' }
+                        </button>
+                        <button onclick="removeItem(${index})" class="bg-rose-500 hover:bg-rose-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs">
+                            削除
+                        </button>
+                    </div>
+
+                    <hr class="border-slate-200/80 my-2">
+
+                    <div class="${accordionClass}">
+                        <hr class="vorder-slate-200/80 my-3">
+                        <label class="block text-xs font-black text-slate-400 mb-2">割り勘設定</label>
+                        <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
+                            ${memberSettingsHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            container.insertAdjacentHTML('beforeend', itemHtml);
+        });
+        calculateSettlement();
+    }
+
+    // 画面の入力内容をデータに同期
+    function updateItem(index, key, value) {
+        if (key === 'total') {
+            items[index][key] = parseInt(value) || 0;
+        } else {
+            items[index][key] = value;
+        }
+        renderItems();
+        calculateSettlement();
+    }
+
+    // excelで計算する
+    function generateExcel() {
+        let memberRequests = Object.fromEntries(members.map(m => [m, 0]));
+        let memberAdvances = Object.fromEntries(members.map(m => [m, 0]));
+        
+        // excelの見出し
+        let excelHeader = ["メンバー名", "合計請求額", "立替額合計"];
+        items.forEach(item=> excelHeader.push(`【内訳】${item.name}`));
+
+        let excelData = [excelHeader];
+        
+        let allShares = items.map(item => {
+            let shares = csh(item)
+
+            for (let i = 0; i < members.length; i++) {
+                memberRequests[members[i]] += shares[i];
+            }
+
+            // 立替額を足す処理
+            if  (memberAdvances.hasOwnProperty(item.payer)) {
+                memberAdvances[item.payer] += item.total;
+            }
+        return shares;
+    });
+
+        // 計算結果をexcelように組み立てる
+        members.forEach((m, i) => {
+            let rowData = [
+                m, 
+                memberRequests[m],
+                memberAdvances[m]
+            ];
+        // 各項目の割り勘結果を結合
+        allShares.forEach(shares => rowData.push(shares[i]));
+        excelData.push(rowData);
+        });
+
+        // Excelファイルとしてダウンロード
+        let worksheet = XLSX.utils.aoa_to_sheet(excelData);
+        let workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "会計(^^)");
+        
+        let inputName = document.getElementById('excel_filename').value.trim();
+        if (!inputName) {
+            // からなら日付
+            let today = new Date().toISOString().split('T')[0];
+            inputName = `精算表_${today}`;
+        } 
+        XLSX.writeFile(workbook, `${inputName}.xlsx`);
+    }
+
+    renderItems();
+    calculateSettlement();
+
+    </script>
+</body>
+<!-- ポップアップの箱配置 (メンバー) -->
+<div id="member_modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-100 text-slate-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-900">メンバー管理</h3>
+            <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-600 font-bold cursor-pointer">×</button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new_member_name" placeholder="名前を入力" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+            <button onclick="addMember()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">追加</button>
+        </div>
+
+        <div id="modal_member_list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+    </div>
+</div>
+<!-- ポップアップの箱配置 (項目) -->
+<div id="item_modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-100 text-slate-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-900">新しい項目を追加</h3>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-xs font-black text-slate-500 mb-1">項目名</label>
+                <input type="text" id="modal_item_name" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-black text-slate-500 mb-1">金額</label>
+                <input type="number" id="modal_item_total" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-black text-slate-500 mb-1">立替人</label>
+                <select id="modal_item_payer" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 cursor-pointer">
+                    </select>
+            </div>
+        </div>
+
+        <div class="flex gap-2 justify-end">
+            <button onclick="closeItemModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer">キャンセル</button>
+            <button onclick="saveNewItem()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">追加</button>
+        </div>
+    </div>
+</div>
+</html>
