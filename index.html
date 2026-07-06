@@ -256,7 +256,7 @@
     }
 
         // メンバーの初期リスト
-        let members = ["メンバー1", "メンバー2", "メンバー3"]
+        let members = [];
 
         // メンバーポップアップ
         function openMemberModal() {
@@ -352,11 +352,7 @@
         }
 
         // 項目初期データ
-        let items = [
-            { id: 1, name: '須田誕', total: 15970, payer:'メンバー1', isEditing: false },
-            { id: 2, name: 'スシロー', total: 5640, payer:'メンバー1', isEditing: false },
-            { id: 3, name: 'ドミノピザ', total: 9398, payer:'メンバー1', isEditing: false }
-        ];
+        let items = [];
 
         // 項目を削除
         function removeItem(index) {
