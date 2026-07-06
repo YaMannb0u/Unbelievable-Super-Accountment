@@ -12,7 +12,6 @@
 <!-- pは内側の余白、mは外側の余白。これにt, b, x, y,で座標の向きを指定できる -->
 <!-- grid-col-1:基本は縦に1列に並べる md:grid-cols-3 パソコンとかは横に3列で並べる -->
     <header class="bg-slate-900 text-white py-6 px-4 shadow-md mb-8">
-<<<<<<< HEAD
         <div class="flex flex-col sm:flex-row gap-2 mt-4 items-baseline sm:items-end">
             <h1 class="text-2xl font-black tracking-wider text-emerald-400">USA</h1>
             <h2 class="text-sm font-black tracking-wider text-emerald-600">-Unbelievable Super Accountment-</h2>
@@ -23,15 +22,6 @@
                     メンバー管理
                 </button>
                 <button onclick="openItemModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
-=======
-            <h1 class="text-2xl font-black tracking-wider text-emerald-400">会計管理</h1>
-            <!-- ボタンで中身が空の項目ボックスを作成 -->
-            <div class="flex gap-2 mt-5">
-                <button onclick="openMemberModal()" class="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
-                    メンバー管理
-                </button>
-                <button onclick="openItemModal()" class="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
                     項目を追加
                 </button>
             </div>
@@ -40,17 +30,10 @@
 
     <!-- たぶ構造の作成 -->
     <div class="max-w-5xl mx-auto px-4 mt-6 flex gap-2 border-b border-slate-200">
-<<<<<<< HEAD
         <button id="tab_input_btn" onclick="switchTab('input')" class="px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer">
             入力
         </button>
         <button id="tab_result_btn" onclick="switchTab('result')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
-=======
-        <button id="tab_input_btn" onclick="switchTab('input')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-emerald-600 transition-all cursor-pointer">
-            入力
-        </button>
-        <button id="tab_result_btn" onclick="switchTab('result')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-emerald-600 transition-all cursor-pointer">
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
             結果
         </button>
     </div>
@@ -79,11 +62,7 @@
                 class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none flex-1">
 
             <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-500 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform hover:-transrate-y-0.5 cursor-pointer text-sm">
-<<<<<<< HEAD
                 Excelファイルをダウンロード
-=======
-                精算表.xlsxをダウンロード
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
             </button>
         </div>
     </main>
@@ -117,15 +96,9 @@
         }
 
         // 計算部分をwebとexcelで共通化
-<<<<<<< HEAD
         function csh(item, shadowBalances) {
             let shares = Array(members.length).fill(0);
             if (!item.total || item.total === 0) return shares;
-=======
-        function csh(item) {
-            let shares = Array(members.length).fill(0);
-            if (item.total === 0) return shares;
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
 
             // 入力されたメンバーの設定を抽出
             let settings = members.map(m => {
@@ -138,26 +111,14 @@
                 return (typeof x === "object" && x.type === "fixed") ? sum + x.amount : sum;
             }, 0);
 
-<<<<<<< HEAD
             // 割り勘グループの総比率を足し算
             let totalRatio = settings.reduce((sum, x) => {
                 return (x !== "absent" && typeof x !== "object") ? sum + x : sum;
             }, 0);
-=======
-            // 山分けにする人が何人いるのか数える
-            let splitCount = settings.filter(x => x === "split").length;
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
 
             // 総額から固定がくを引いた残りの金額
             let splitTotal = item.total - fixedTotal;
 
-<<<<<<< HEAD
-=======
-            let totalRatio = settings.reduce((sum, x) => {
-                return (x !== "absent" && typeof x !== "object") ? sum + x : sum;
-            }, 0);
-
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
             // 割り勘する人がいなかったり、そうひりつ0ならここで終わる
             if (totalRatio <= 0 || splitTotal <= 0)  {
                 // 固定額の人だけの金額
@@ -189,7 +150,6 @@
                 }
                 let remSplit = splitTotal - (currentTotal - fixedTotal);
                 // 端数の凝ってたら上から1円ずつ配る
-<<<<<<< HEAD
                 while (remSplit > 0) {
                     let targetIdx = -1;
                     let minShadow = Infinity;
@@ -213,16 +173,6 @@
                     } else {
                         break;
                     }
-=======
-                if (remSplit > 0) {
-                    for (let i = 0; i < settings.length; i++) {
-                        let mode = settings[i];
-                        if (mode !== "absent" && typeof mode !== "object" && remSplit > 0) {
-                            shares[i] += 1;
-                            remSplit--;
-                        }
-                    }
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
                 }
                 return shares;
         }
@@ -232,23 +182,16 @@
         function calculateSettlement() {
             // 全員の貸し借りを0で初期化
             let balances = Object.fromEntries(members.map(m => [m, 0]));
-<<<<<<< HEAD
 
             // 端数分配を監視,はじめは0
             let shadowBalances = Object.fromEntries(members.map(m => [m, 0]));
-=======
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
             
             // 各項目の割り勘を計算
             items.forEach(item=> {
                 if (item.total === 0) return;
 
                 // 計算
-<<<<<<< HEAD
                 let shares = csh(item, shadowBalances);
-=======
-                let shares = csh(item);
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
 
                 // 結果を残高に反映させる
                 for (let i = 0; i < members.length; i++) {
@@ -619,12 +562,9 @@
     function generateExcel() {
         let memberRequests = Object.fromEntries(members.map(m => [m, 0]));
         let memberAdvances = Object.fromEntries(members.map(m => [m, 0]));
-<<<<<<< HEAD
 
         // 端数メーター
         let shadowBalancesExcel = Object.fromEntries(members.map(m => [m, 0]));
-=======
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
         
         // excelの見出し
         let excelHeader = ["メンバー名", "合計請求額", "立替額合計"];
@@ -633,11 +573,7 @@
         let excelData = [excelHeader];
         
         let allShares = items.map(item => {
-<<<<<<< HEAD
             let shares = csh(item, shadowBalancesExcel)
-=======
-            let shares = csh(item)
->>>>>>> 672f3a2c24a69db84862a43edc8689f13e7f1d87
 
             for (let i = 0; i < members.length; i++) {
                 memberRequests[members[i]] += shares[i];
