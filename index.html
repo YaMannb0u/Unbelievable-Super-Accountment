@@ -421,7 +421,7 @@
             container.innerHTML = '';
 
             // パソコンとかの時は見やすいように横に列にする
-            container.className = "grid grid-cols-1 md:grid-cols-2 gap-6 space-y-0";
+            container.className = "grid grid-cols-1 md:grid-cols-3 gap-6 space-y-0";
 
             items.forEach((item, index) => {
                 // trueなら空に、falseならdisabeledと表示
@@ -457,7 +457,7 @@
                         <div class="flex items-center justify-between gap-2 w-full">
                             <span class="font-bold text-slate-600 truncate max-w-[75px]">${member}</span>
 
-                            <select ${isLocked} onchange="updateMemberMode(${index}, '${member}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-50 text-[11px] font-bold cursor-pointer">
+                            <select ${isLocked} onchange="updateMemberMode(${index}, '${member}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
                                 <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
                                 <option value="absent" ${isAbsent ? 'selected' : ''}>不参加</option>
                                 <option value="fixed" ${isFixed ? 'selected' : ''}>固定額</option>
@@ -465,7 +465,7 @@
                         </div>
 
                         <div class="${fixedVisible} w-full">
-                            <div class="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-300 h-7">
+                            <div class="flex items-center gap-1 bg-amber-50 p-0.5 rounded-lg border border-amber-700 h-7">
                                 <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">金額:</span>
                                 <input type="number" step="1" value="${fixedValue}" placeholder="0" ${isLocked}
                                     onchange="updateMemberFixedAmount(${index}, '${member}', this.value)"
@@ -475,7 +475,7 @@
                         </div>
 
                         <div class="${ratioVisible} w-full">
-                            <div class="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-300 h-7">
+                            <div class="flex items-center gap-1 bg-indigo-50 p-0.5 rounded-lg border border-indigo-700 h-7">
                                 <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">比率:</span>
                                 <input type="number" step="0.1" value="${ratioValue}" placeholder="1" ${isLocked}
                                     onchange="updateMemberRatio(${index}, '${member}', this.value)"
