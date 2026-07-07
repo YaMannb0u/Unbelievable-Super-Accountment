@@ -466,9 +466,9 @@
 
                         <div class="${fixedVisible} w-full">
                             <div class="flex items-center gap-1 bg-emerald-50 p-0.5 rounded-lg border border-emerald-300 h-7">
-                                <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">比率:</span>
-                                <input type="number" step="0.1" value="${fixedValue}" placeholder="1" ${isLocked}
-                                    onchange="updateMemberRatio(${index}, '${member}', this.value)"
+                                <span class="text-[10px] font-black text-emerald-600 p-1.5 shrink-0">金額:</span>
+                                <input type="number" step="1" value="${fixedValue}" placeholder="0" ${isLocked}
+                                    onchange="updateMemberFixedAmount(${index}, '${member}', this.value)"
                                     class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-emerald-700 focus:outline-none rounded-md text-[11px]">
                                 <span class="text-[10px] font-black text-emerald-600 pr-1.5 shrink-0">円</span>
                             </div>
