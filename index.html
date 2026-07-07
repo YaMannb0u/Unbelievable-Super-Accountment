@@ -147,7 +147,7 @@
                         currentTotal += shares[i];
                     }
                 }
-                let remSplit = splitTotal - (currentTotal - fixedTotal);
+                let remSplit = splitTotal - currentTotal;
                 // 端数の凝ってたら上から1円ずつ配る
                 while (remSplit > 0) {
                     let targetIdx = -1;
