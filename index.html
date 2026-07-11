@@ -11,25 +11,33 @@
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
 <!-- pは内側の余白、mは外側の余白。これにt, b, x, y,で座標の向きを指定できる -->
 <!-- grid-col-1:基本は縦に1列に並べる md:grid-cols-3 パソコンとかは横に3列で並べる -->
-    <header class="bg-slate-900 text-white py-6 px-4 shadow-md mb-8">
+    <header class="bg-slate-900 text-white py-6 px-4 shadow-md sticky top-0 z-50">
         <div class="flex flex-col sm:flex-row gap-2 mt-4 items-baseline sm:items-end">
             <h1 class="text-2xl font-black tracking-wider text-emerald-400">USA</h1>
             <h2 class="text-sm font-black tracking-wider text-emerald-600">-Unbelievable Super Accountment-</h2>
         </div>
             <!-- ボタンで中身が空の項目ボックスを作成 -->
-            <div class="flex gap-2 mt-5">
-                <button onclick="openMemberModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
-                    メンバー管理
-                </button>
-                <button onclick="openItemModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
-                    項目を追加
-                </button>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full mt-5">
+                <div class="slex gap-2 items-center">
+                    <button onclick="openMemberModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
+                        メンバー管理
+                    </button>
+                    <button onclick="openItemModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer ">
+                        項目を追加
+                    </button>
+                </div>
+
+                <div class="flex items-center">
+                    <button onclick="openHistoryModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-4 py-2 rounded-xl test-sm transition-akk cursor-pointer">
+                        履歴・引き継ぎ
+                    </button>
+                </div>
             </div>
             <!-- <span class="text-xs bg-slate-800 px-3 py-1 rounded-full border border-slate-700">サーバー不要 / 完全ローカル動作</span> -->
         </header>
 
     <!-- たぶ構造の作成 -->
-    <div class="max-w-5xl mx-auto px-4 mt-6 flex gap-2 border-b border-slate-200">
+    <div class="max-w-full w-full mx-auto px-4">
         <button id="tab_input_btn" onclick="switchTab('input')" class="px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer">
             入力
         </button>
@@ -38,31 +46,45 @@
         </button>
     </div>
 
-    <main id="room_input" class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+    <main id="room_input" class="max-w-full mx-auto px-4 py-8 space-y-8">
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <h2 class="text-lg font-bold mb-$ flex items-center gap-2">
                 精算したいもの一覧
+            <span id="member-count" class="text-sm font-normal texr-slate-500 ml-2"></span>
             </h2>
             <div id="items_container" class="space-y-4"></div>
         </section>
     </main>
 
-    <main id="room_result" class="hidden max-w-5xl mx-auto px-4 py-8 space-y-8">
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h2 class="text-lg font-bold mb-$ flex items-center gap-2">
-                精算
-            </h2>
-            <div id="settlement_container" class="space-y-2 text-sm font-medium text-slate-700">
+    <main id="room_result" class="hidden w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-6">
+        <section class="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    メンバーごとの負担状況
+                </h2>
+                <div id="member_balances_container" class="space-y-3 text-sm font-medium text-slate-700">
+                    </div>
             </div>
         </section>
-        
-        <div class="flex flex-col sm:flex-row gap-2 mt-4">
-            <input type="text" id="excel_filename" placeholder="ファイル名"
-                class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none flex-1">
 
-            <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-500 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform hover:-transrate-y-0.5 cursor-pointer text-sm">
-                Excelファイルをダウンロード
-            </button>
+        <div class="w-full md:w-96 shrink-0 flex flex-col gap-4">
+        
+            <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    精算
+                </h2>
+                <div id="settlement_container" class="space-y-2 text-sm font-medium text-slate-700">
+                    </div>
+            </section>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="excel_filename" placeholder="ファイル名"
+                    class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none flex-1">
+
+                <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform cursor-pointer text-sm text-center leading-snug whitespace-normal break-words">
+                    Excelファイル<br>ダウンロード
+                </button>
+            </div>
         </div>
     </main>
 
@@ -94,6 +116,126 @@
             }
         }
 
+        // 履歴のポップアップ　開く
+        function openHistoryModal() {
+            document.getElementById('history_modal').classList.remove('hidden');
+            renderHistoryList();
+        }
+
+        // 履歴のポップアップ　閉じる
+        function closeHistoryModal() {
+            document.getElementById('history_modal').classList.add('hidden');
+        }
+
+        // 履歴に保存
+        function saveCurrentToHistory() {
+            const titleInput = document.getElementById('history_title_input');
+            const title = titleInput.value.trim();
+
+            if (title === '') {
+                alert('履歴のタイトルを入力');
+                return;
+            }
+
+            // ローカルストレージから既存の履歴を読み込む
+            let historyData = JSON.parse(localStorage.getItem('history_list')) || [];
+
+            // 保存するデータオブジェクトを作成
+            const newHistoryItem = {
+                id: Date.now(),
+                title: title,
+                date: new Date().toLocaleDateString('ja-JP', { hour12: false }),
+                savedMembers: members,
+                savedItems: items
+            };
+
+            // 先頭に追加
+        historyData.unshift(newHistoryItem);
+            localStorage.setItem('history_list', JSON.stringify(historyData));
+
+            titleInput.value = '';
+            renderHistoryList();
+        }
+
+        // 履歴の削除
+        function deleteHistory(historyId) {
+            if (!confirm('この履歴データを削除していい？')) return;
+
+            let historyData = JSON.parse(localStorage.getItem('history_list')) || [];
+            historyData = historyData.filter(h => h.id !== historyId);
+            localStorage.setItem('history_list', JSON.stringify(historyData));
+
+            renderHistoryList();
+        }
+
+        // 履歴一覧をポップアップ内に表zi
+        function renderHistoryList() {
+            const container = document.getElementById('modal_history_list');
+            container.innerHTML = '';
+
+            let historyData = JSON.parse(localStorage.getItem('history_list')) || [];
+
+            if (historyData.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-xs italic text-center py-4">履歴はありません</p>`;
+                return;
+            }
+
+            historyData.forEach((hist) => {
+                const itemHtml =`
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col gap-2.5 shadow-sm">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <h5 class="font-black text-slate-800 text-sm tracking-wider">${hist.title}</h5>
+                                <span class="text-[10px] text-slate-400 font-bold">${hist.date} (${hist.savedMembers.length}人 / ${hist.savedItems.length}項目)</span>
+                            </div>
+                            <button onclick="deleteHistory(${hist.id})" class="text-slate-400 hover:text-slate-600 font-bold text-xl cursor-pointer">×</button>
+                        </div>
+
+                        <div class="flex gap-1.5 w-full">
+                            <button onclick="localHistoryData(${hist.id}, 'members_only')" class="flex-1 bg-white text-emerald-600 hover:text-emerald-50 font-bold py-1 px-2 rounded-lg text-[11px] cursor-pointer text-center">
+                                メンバーのみ引き継ぐ
+                            </button>
+                            <button onclick="localHistoryData(${hist.id}, 'all')" class="flex-1 bg-emerald-600 text-white hover:text-emerald-700 font-bold py-1 px-2 rounded-lg text-[11px] cursor-pointer text-center shadow-sm">
+                                全て引き継ぐ
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+
+        // 履歴からデータを復元する
+        function localHistoryData(historyId, mode) {
+            let historyData = JSON.parse(localStorage.getItem('history_list'));
+            const selectedHist = historyData.find(h => h.id === historyId);
+
+            if (!selectedHist) return;
+
+            const confirmMsg = mode === 'members_only'
+                ? `「${selectedHist.title}」からのメンバー情報を取得して、現在の画面を更新してもいい？`
+                : `「${selectedHist.title}」からの全ての情報を取得して、現在の画面を更新してもいい？`
+
+                if (!confirm(confirmMsg)) return;
+
+                // メンバーを引き抜くのは共通
+                members = JSON.parse(JSON.stringify(selectedHist.savedMembers));
+
+                if (mode === 'members_only') {
+                    items = [];
+                } else {
+                    items = JSON.parse(JSON.stringify(selectedHist.savedItems));
+                }
+
+            // 画面と計算の復活
+            const countEl = document.getElementById('member-count');
+                if (countEl) countEl.innerText = `(${members.length}人)`;
+            
+                renderItems()
+                calculateSettlement();
+                closeHistoryModal();
+        }
+
         // 計算部分をwebとexcelで共通化
         function csh(item, shadowBalances) {
             let shares = Array(members.length).fill(0);
@@ -102,7 +244,7 @@
             // 入力されたメンバーの設定を抽出
             let settings = members.map(m => {
                 if (item.settings === undefined) return 1;
-                return item.settings[m] !== undefined ? item.settings[m] : 1;
+                return item.settings[m.name] !== undefined ? item.settings[m.name] : 1;
             });
 
             // 固定額の人が払う合計金額を算出
@@ -140,10 +282,10 @@
                     if (mode === "absent") {
                         shares[i] = 0;
                     } else if (typeof mode === "object" && mode.type === "fixed") {
-                        shares[i] = mode.amount;
+                        shares[i] = Number(mode.amount) || 0;
                     } else {
                         // ここが割り勘
-                        shares[i] = Math.floor(baseAmountPerRatio * mode);
+                        shares[i] = Math.floor(baseAmountPerRatio * Number(mode));
                         currentTotal += shares[i];
                     }
                 }
@@ -156,9 +298,9 @@
                     for (let i = 0; i < settings.length; i++) {
                         let mode = settings[i];
                         if (mode !== "absent" && typeof mode !== "object") {
-                            let mName = members[i];
-                            if (shadowBalances[mName] < minShadow) {
-                                minShadow = shadowBalances[mName];
+                            let mName = members[i].name;
+                            if ((shadowBalances[mName] || 0) < minShadow) {
+                                minShadow = shadowBalances[mName] || 0;
                                 targetIdx = i;
                             }
                         }
@@ -167,7 +309,7 @@
                     if (targetIdx !== -1) {
                         shares[targetIdx] += 1;
                         // メーターを増やす
-                        shadowBalances[members[targetIdx]] += 1;
+                        shadowBalances[members[targetIdx].name] = (shadowBalances[members[targetIdx].name] || 0) + 1;
                         remSplit--;
                     } else {
                         break;
@@ -180,26 +322,28 @@
         // webの方で計算
         function calculateSettlement() {
             // 全員の貸し借りを0で初期化
-            let balances = Object.fromEntries(members.map(m => [m, 0]));
+            let balances = Object.fromEntries(members.map(m => [m.name, 0]));
 
             // 端数分配を監視,はじめは0
-            let shadowBalances = Object.fromEntries(members.map(m => [m, 0]));
+            let shadowBalances = Object.fromEntries(members.map(m => [m.name, 0]));
             
             // 各項目の割り勘を計算
             items.forEach(item=> {
-                if (item.total === 0) return;
+                const totalAmount = Number(item.total) || 0;
+                if (totalAmount=== 0) return;
 
                 // 計算
                 let shares = csh(item, shadowBalances);
 
                 // 結果を残高に反映させる
                 for (let i = 0; i < members.length; i++) {
-                    balances[members[i]] -= shares[i];
+                    balances[members[i].name] -= shares[i];
                 }  
                 
                 // 立替額を足す処理
+                const pName = (item.payer && typeof item.payer === 'object') ? item.payer.name : item.payer;
                 if  (balances.hasOwnProperty(item.payer)) {
-                    balances[item.payer] += item.total;
+                    balances[pName] += totalAmount;
                 }
             });
 
@@ -252,10 +396,105 @@
         } else {
             container.innerHTML = routes.join('');
         }
+
+        const bgContainer = document.getElementById('member_balances_container');
+        if (bgContainer) {
+            // 中身リセット
+            bgContainer.innerHTML = '';
+
+            // 各メンバーの支払った総額と、最終的な収支を計算
+            members.forEach(member => {
+                // オブジェクトから名前を取り出す
+                const mName = member.name;
+
+                // 人が実際に支払った金額
+                let totalPaid = items.reduce((sum, item) => {
+                    const payerName = (item.payer && typeof item.payer === 'object') ? item.payer.name : item.payer;
+
+                    return payerName === mName ? sum + (Number(item.total) || 0) : sum;
+                }, 0);
+
+                // 最終的な収支
+                let rawBalance = balances[mName] || 0;
+
+                // 最終的な収支の数字に変換　払い過ぎがプラス、払う人が-
+                let finalBalance = rawBalance;
+
+                // 最終収支に応じて色とテキストわける
+                let balanceColor = 'text-slate-500';
+                let balanceText = '±0円';
+
+                if (finalBalance > 0) {
+                    // 最終収支プラス
+                    balanceColor = 'text-emerald-600 font-black';
+                    balanceText = `+${finalBalance.toLocaleString()}円 (受け取る)`;
+                } else if (finalBalance < 0) {
+                    // 最終収支マイナス
+                    balanceColor = 'text-rose-600 font-black';
+                    balanceText = `-${Math.abs(finalBalance).toLocaleString()}円 (支払う)`;
+                }
+
+                // 一人分の支払い状況のHTMLを作成
+                let memberRowHtml = `
+                    <div class="flex flex-col sm:flow-row sm:items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/60 gap-1">
+                        <div class="flex items-center gap-3">
+                            <span class="font-black text-slate-700 text-base">${mName}</span>
+                            <span class="text-xs text-slate-400">支払った金額: ${totalPaid.toLocaleString()}円</span>
+                        </div>
+                        <div class="text-sm ${balanceColor}">
+                            ${balanceText}
+                        </div>
+                    </div>
+                `;
+                bgContainer.insertAdjacentHTML('beforeend', memberRowHtml);
+            });
+        }
     }
 
         // メンバーの初期リスト
         let members = [];
+
+        // 色タグの定義
+        const groupColors = {
+            "none": {name: "なし", dotClass: "bg-slate-300"},
+            "red": {name: "赤", dotClass: "bg-rose-500"},
+            "blue": {name: "青", dotClass: "bg-sky-500"},
+            "green": {name: "緑", dotClass: "bg-emerald-500"},
+            "yellow": {name: "黄", dotClass: "bg-amber-500"},
+            "purple": {name: "紫", dotClass: "bg-purple-500"}
+        }
+
+        // カスタムカラーセレクトの切り替え
+        function toggleColorDropdown() {
+            const menu = document.getElementById('color_dropdown_menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        // 色が選ばれた時の処理
+        function selectGroupColor(colorkey) {
+            // 隠しインプットの値を書き換える
+            const input = document.getElementById('new_member_group');
+            if (input) input.value = colorkey;
+
+            const btn = document.getElementById('selected_group_btn');
+            if (btn) {
+                btn.className = "p-2 borderborder-slate-200 rounded-xl bg-white cursor-pointer flex items-center justify-center min-w-[46px] h-[38px] focus:outline-none shadow-sm";
+
+                if (colorkey === 'none') {
+                    btn.innerHTML = `<span class="w-3 h-3 rounded-full bg-slate-50"></span>`;
+                } else {
+                    const colorClass = groupColors[colorkey].dotClass;
+                    btn.innerHTML = `<span class="w-3 h-3 rounded-full ${colorClass}"></span>`;
+                }
+            }
+
+            const menu = document.getElementById('color_dropdown_menu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
 
         // メンバーポップアップ
         function openMemberModal() {
@@ -275,10 +514,25 @@
             listContainer.innerHTML = '';
 
             members.forEach((member, index) => {
+                const currentGroup = member.group || "none"
+                // あれば、メンバーのタグ取得
+                const colorInfo = groupColors[currentGroup] || groupColors["none"];
+
+                // グループなしなら、バッジを隠す
+                let badgeHtml = '';
+                if (currentGroup !== "none") {
+                    badgeHtml = `
+                        <span class="w-1.5 h-1.5 rounded-full ${colorInfo.dotClass} shrink-0 shadow-sm"></span>
+                    `;
+                }
+
                 const rowHtml = `
-                <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                    <span class="font-medium text-slate-700">${member}</span>
-                    <button onclick="removeMember(${index})" class="text-rose-500 hover:text-rose-700 font-bold px-2 text-sm cursor-pointer">削除</button>
+                <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        ${badgeHtml}
+                        <span class="font-bold text-slate-700 text-sm tracking-wider">${member.name}</span>
+                    </div>
+                    <button onclick="removeMember(${index})" class="text-rose-500 hover:text-rose-700 font-bold px-2 text-xs cursor-pointer">削除</button>
                 </div>
             `;
             listContainer.insertAdjacentHTML('beforeend', rowHtml);
@@ -289,20 +543,31 @@
         // メンバーを新しくリストに追加
         function addMember() {
             const input = document.getElementById('new_member_name');
+            const groupSelect = document.getElementById('new_member_group');
             const name = input.value.trim();
+            const group = groupSelect ? groupSelect.value : "none";
+
             // 空なら何もしない
             if (name === '') return;
 
             // メンバーの重複チェック
-            if (members.includes(name)) {
+            if (members.some(member => member.name === name)) {
                 alert('その名前はすでに登録されてるよ！');
                 return;
             }
 
-            members.push(name);
+            members.push({ name: name, group: group });
             // 入力欄をからに戻す
             input.value = '';
+            // タグをなしに設定
+            selectGroupColor('none')
             renderModalMembers();
+
+            const countEl = document.getElementById('member-count');
+            if (countEl) countEl.innerText = `(${members.length}人)`;
+
+            // 立替人の選択肢や項目カードの再描画
+            if (typeof renderItems === 'function') renderItems();
         }
 
         // メンバーを削除する
@@ -310,6 +575,9 @@
             // 指定番目を1人削除
             members.splice(index, 1)
             renderModalMembers();
+            const countEl = document.getElementById('member-count');
+            if (countEl) countEl.innerText = `(${members.length}人)`;
+            if (typeof renderItems === 'function') renderItems();
         }
 
         // 割り勘のモードが切り替わった時
@@ -365,7 +633,7 @@
             document.getElementById('item_modal').classList.remove('hidden');
             // 立替人のドロップダウンの選択肢
             const payerSelect = document.getElementById('modal_item_payer');
-            payerSelect.innerHTML = members.map(m => `<option value="${m}">${m}</option>`).join('');
+            payerSelect.innerHTML = members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
             // 前回の入力をリセット
             document.getElementById('modal_item_name').value = '';
             document.getElementById('modal_item_total').value = '';
@@ -384,7 +652,8 @@
 
             const name = nameInput.value.trim();
             const total = parseInt(totalInput.value) || 0;
-            const payer = payerSelect.value;
+            let rawPayer = payerSelect.value;
+            const payer = (rawPayer && typeof rawPayer === 'object') ? rawPayer.name : rawPayer;
 
             // 名前がと金額が空だとガード
             if (name === '') {
@@ -414,6 +683,82 @@
             calculateSettlement();
         }
 
+        // 指定したたぶのメンバー設定をまとめて変更
+        function applyGroupMode(itemId, targetColor, modeType) {
+            // 対象の項目を見つける
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (!item.settings) item.settings = {};
+
+            // 全メンバーを探索して指定したたぶの人のみ書き換える
+            members.forEach(member => {
+                if (member.group === targetColor) {
+                    const mName = member.name;
+
+                    if(modeType === 'ratio') {
+                        // 割り勘に一括設定
+                        item.settings[mName] = 1;
+                    } else if (modeType === 'fixed') {
+                    // 固定額に一括設定
+                    item.settings[mName] = { type: "fixed", amount: 0};
+                    } else if (modeType === 'absent') {
+                        item.settings[mName] = "absent";
+                    }
+                }
+            });
+
+            renderItems();
+            if (typeof calculateSettlement === 'function') calculateSettlement();
+        }
+
+        // メンバーポップアップ用メニュー開閉
+        function toggleColorDropdown() {
+            const menu = document.getElementById('color_dropdown_menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // 項目カード用メニュー開閉
+        function toggleItemColorDropdown(itemId) {
+            const menu = document.getElementById(`item_color_menu_${itemId}`);
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // タグが選ばれた時の処理
+        function selectItemBulkColor(itemId, colorkey) {
+            const input = document.getElementById(`item_bulk_group_${itemId}`);
+            if (input) input.value = colorkey;
+
+            // ドットの色切り替え
+            const btn = document.getElementById(`item_selected_btn_${itemId}`);
+            if (btn) {
+                if (colorkey === 'none') {
+                btn.innerHTML = `<span class="w-3 h-3 rounded-full bg-slate-50"></span>`;
+                } else {
+                    const colorClass = (typeof groupColors !== 'undefined' && groupColors[colorkey])
+                        ? groupColors[colorkey].dotClass
+                        : "bg-slate-300";
+                    btn.innerHTML = `<span class="w-3 h-3 rounded-full ${colorClass}"></span>`;
+                }
+
+            const menu = document.getElementById(`item_color_menu_${itemId}`);
+            if (menu) {
+                menu.classList.add('hidden');
+                }
+            }
+        }
+
+        // 一括適用
+        function applyItemBulkMode(itemId, modeType) {
+            const input = document.getElementById(`item_bulk_group_${itemId}`);
+            const selectedColor = input ? input.value : "none";
+            
+            // 一括適用関数を呼び出す
+            if (typeof applyGroupMode === 'function') {
+            applyGroupMode(itemId, selectedColor, modeType);
+            }
+        }
+
         // 画面を書く関数
         function renderItems() {
             const container = document.getElementById('items_container');
@@ -421,7 +766,7 @@
             container.innerHTML = '';
 
             // パソコンとかの時は見やすいように横に列にする
-            container.className = "grid grid-cols-1 md:grid-cols-3 gap-6 space-y-0";
+            container.className = "grid grid-cols-1 lg:grid-cols-3 gap-6 space-y-0";
 
             items.forEach((item, index) => {
                 // trueなら空に、falseならdisabeledと表示
@@ -430,122 +775,167 @@
                 // falseなら入力欄はグレーにしておく
                 const inputBg = item.isEditing ? 'bg-white' : 'bg-slate-100 text-slate-500';
 
+                
                 // 項目ごとにメンバーの情報を書き換えていく
                 let memberSettingsHtml = '';
-                members.forEach((member) => {
-                    // 初期値は1(割り勘)
-                    if (item.settings === undefined) item.settings = {};
-                    if (item.settings[member] === undefined) item.settings[member] = 1;
+                
+                if (item.isEditing) {
+                    members.forEach((member) => {
+                        // 名前を取り出す
+                        const mName = member.name;
 
-                    let currentSetting = item.settings[member];
+                        // 初期値は1(割り勘)
+                        if (item.settings === undefined) item.settings = {};
+                        if (item.settings[mName] === undefined) item.settings[mName] = 1;
 
-                    // 今どのモードなのかを判定
-                    let isAbsent = currentSetting === "absent"
-                    let isFixed = (typeof currentSetting === "object" && currentSetting.type === "fixed");
-                    let isSplit = !isAbsent && !isFixed
+                        let currentSetting = item.settings[mName];
 
-                    // 固定がくの時の金額、割り勘の傾斜を表示、それ以外は空を表示
-                    let fixedValue = isFixed ? currentSetting.amount : "";
-                    let ratioValue = isSplit ? currentSetting : "";
+                        // 今どのモードなのかを判定
+                        let isAbsent = currentSetting === "absent";
+                        let isFixed = (typeof currentSetting === "object" && currentSetting.type === "fixed");
+                        let isSplit = !isAbsent && !isFixed;
 
-                    // 特定の時だけ入力欄を表示
-                    let fixedVisible = isFixed ? "" : "hidden";
-                    let ratioVisible = isSplit ? "" : "hidden";
+                        // 固定がくの時の金額、割り勘の傾斜を表示、それ以外は空を表示
+                        let fixedValue = isFixed ? currentSetting.amount : "";
+                        let ratioValue = isSplit ? currentSetting : "";
 
-                    memberSettingsHtml += `
-                    <div class="p-2 bg-slate-50 rounded-xl border border-slate-200/60 text-xs flex flex-col gap-1.5">
-                        <div class="flex items-center justify-between gap-2 w-full">
-                            <span class="font-bold text-slate-600 truncate max-w-[75px]">${member}</span>
+                        // 特定の時だけ入力欄を表示
+                        let fixedVisible = isFixed ? "" : "hidden";
+                        let ratioVisible = isSplit ? "" : "hidden";
 
-                            <select ${isLocked} onchange="updateMemberMode(${index}, '${member}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
-                                <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
-                                <option value="absent" ${isAbsent ? 'selected' : ''}>不参加</option>
-                                <option value="fixed" ${isFixed ? 'selected' : ''}>固定額</option>
-                            </select>
-                        </div>
 
-                        <div class="${fixedVisible} w-full">
-                            <div class="flex items-center gap-1 bg-amber-50 p-0.5 rounded-lg border border-amber-700 h-7">
-                                <span class="text-[10px] font-black text-amber-700 p-1.5 shrink-0">金額:</span>
-                                <input type="number" step="1" value="${fixedValue}" placeholder="0" ${isLocked}
-                                    onchange="updateMemberFixedAmount(${index}, '${member}', this.value)"
-                                    class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-amber-800 focus:outline-none rounded-md text-[11px]">
-                                <span class="text-[10px] font-black text-amber-700 pr-1.5 shrink-0">円</span>
+                        // メンバータグを表示
+                        const mGroup = member.group || "none";
+                        const mColorClass  = (typeof groupColors !== 'undefined' && groupColors[mGroup])
+                            ? groupColors[mGroup].dotClass
+                            // noneなら透明
+                            : "bg-transparent";
+
+                        memberSettingsHtml += `
+                        <div class="p-2 bg-slate-50 rounded-xl border border-slate-200/60 text-xs flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between gap-2 w-full">
+                                <div class="flex items-center gap-1.5 truncate max-w-[90px]">
+                                    <span class="w-2 h-2 rounded-full ${mColorClass} shrink-0"></span>
+                                    <span class="font-bold text-slate-600 truncate max-w-[75px]">${mName}</span>
+                                </div>
+
+                                <select ${isLocked} onchange="updateMemberMode(${index}, '${mName}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
+                                    <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
+                                    <option value="absent" ${isAbsent ? 'selected' : ''}>不参加</option>
+                                    <option value="fixed" ${isFixed ? 'selected' : ''}>固定額</option>
+                                </select>
+                            </div>
+
+                            <div class="${fixedVisible} w-full">
+                                <div class="flex items-center gap-1 bg-amber-50 p-0.5 rounded-lg border border-amber-700 h-7">
+                                    <span class="text-[10px] font-black text-amber-700 p-1.5 shrink-0">金額:</span>
+                                    <input type="number" step="1" value="${fixedValue}" placeholder="0" ${isLocked}
+                                        onchange="updateMemberFixedAmount(${index}, '${mName}', this.value)"
+                                        class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-amber-800 focus:outline-none rounded-md text-[11px]">
+                                    <span class="text-[10px] font-black text-amber-700 pr-1.5 shrink-0">円</span>
+                                </div>
+                            </div>
+
+                            <div class="${ratioVisible} w-full">
+                                <div class="flex items-center gap-1 bg-indigo-50 p-0.5 rounded-lg border border-indigo-700 h-7">
+                                    <span class="text-[10px] font-black text-indigo-700 p-1.5 shrink-0">比率:</span>
+                                    <input type="number" step="0.1" value="${ratioValue}" placeholder="1" ${isLocked}
+                                        onchange="updateMemberRatio(${index}, '${mName}', this.value)"
+                                        class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-indigo-800 focus:outline-none rounded-md text-[11px]">
+                                    <span class="text-[10px] font-black text-indigo-700 pr-1.5 shrink-0">倍</span>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="${ratioVisible} w-full">
-                            <div class="flex items-center gap-1 bg-indigo-50 p-0.5 rounded-lg border border-indigo-700 h-7">
-                                <span class="text-[10px] font-black text-indigo-700 p-1.5 shrink-0">比率:</span>
-                                <input type="number" step="0.1" value="${ratioValue}" placeholder="1" ${isLocked}
-                                    onchange="updateMemberRatio(${index}, '${member}', this.value)"
-                                    class="w-full h-full p-0.5 bg-white border-0 text-center font-bold text-indigo-800 focus:outline-none rounded-md text-[11px]">
-                                <span class="text-[10px] font-black text-indigo-700 pr-1.5 shrink-0">倍</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-                // メンバーの設定は、普段は隠しておく
-                const accordionClass = item.isEditing ? '' : 'hidden';
+                    `;
+                });
+            }
 
                 // 項目カード全体のHTML
                 // text-sm: ちょっと文字の大きさを小さくして綺麗に枠内に収める
                 // flex-colは縦並びにする箱
-                // members.map(m => ... ): 登録されているメンバー（m）を上から順番に取り出して、<option>名前</option> という選択肢のタグに変換しているよ。
+                // members.map(m => ... ): 登録されているメンバー（m）を上から順番に取り出して、<option>名前</option> という選択肢のタグに変換
                 const itemHtml = `
                 <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-black text-slate-500 mb-1">項目名</label>
-                                <input type="text" value="${item.name}" ${isLocked} onchange="updateItem(${index}, 'name', this.value)" class="w-full p-2  border border-slate-300 rounded-lg text-sm ${inputBg}">
+                                <input type="text" value="${item.name}" ${isLocked} onchange="updateItem(${index}, 'name', this.value)" class="w-full p-2  border border-slate-300 rounded-lg text-sm ${inputBg} focus:outline-none focus:border-emerald-500 font-bold">
                             </div>
                             <div>
                                 <label class="block text-xs font-black text-slate-600 mb-1">金額</label>
-                                <input type="number" value="${item.total}" ${isLocked} onchange="updateItem(${index}, 'total', this.value)" class="w-full p-2 border border-slate-300 rounded-lg text-sm ${inputBg}">
+                                <input type="number" value="${item.total}" ${isLocked} onchange="updateItem(${index}, 'total', this.value)" class="w-full p-2 border border-slate-300 rounded-lg text-sm ${inputBg} focus:outline-none focus:border-emerald-500 font-bold">
                             </div>
                         </div>
 
-                    <div class="flex gap-2 items-end">
-                        <div class="flex-1">
-                            <label class="block text-xs font-black text-slate-500 mb-2">立替人</label>
-                            <select ${isLocked} onchange="updateItem(${index}, 'payer', this.value)" class="w-full p-2 border border-slate-300 rounded-lg  text-sm ${inputBg} cursor-pointer">
-                                ${members.map(m => `
-                                    <option value="${m}" ${item.payer === m ? 'selected' : ''}>${m}</option>
-                                `).join('')}
-                            </select>
-                        </div> 
-                        <button onclick="toggleEdit(${index})" class="bg-emerald-500 hover:bg-emerald-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs">
-                            ${item.isEditing ? '確定' : '編集' }
-                        </button>
-                        <button onclick="removeItem(${index})" class="bg-rose-500 hover:bg-rose-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs">
-                            削除
-                        </button>
-                    </div>
-
-                    <hr class="border-slate-200/80 my-2">
-
-                    <div class="${accordionClass}">
-                        <hr class="vorder-slate-200/80 my-3">
-                        <label class="block text-xs font-black text-slate-400 mb-2">割り勘設定</label>
-                        <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
-                            ${memberSettingsHtml}
+                        <div class="flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-xs font-black text-slate-500 mb-2">立替人</label>
+                                <select ${isLocked} onchange="updateItem(${index}, 'payer', this.value)" class="w-full p-2 border border-slate-200 rounded-lg  text-sm ${inputBg} cursor-pointer font-bold focus:outline-none focus:border-emerald-500">
+                                    ${members.map(m => `
+                                        <option value="${m.name}" ${item.payer === m.name ? 'selected' : ''}>${m.name}</option>
+                                    `).join('')}
+                                </select>
+                            </div> 
+                            <button onclick="toggleEdit(${index})" class="bg-emerald-500 hover:bg-emerald-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs transition-colors shadow-sm">
+                                ${item.isEditing ? '確定' : '編集' }
+                            </button>
+                            <button onclick="removeItem(${index})" class="bg-rose-500 hover:bg-rose-600 text-white w-14 h-9 rounded-lg font-bold cursor-pointer text-xs transition-colors shadow-sm">
+                                削除
+                            </button>
                         </div>
+
+                        ${item.isEditing ? ` 
+                        <div class="mt-4 border-t border-slate-100 pt-4 space-y-4">
+                            <div>
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/50 relative h-12">
+                                    <h4 class="text-[11px] font-black text-slate-400 tracking-wider uppercase shrink-0 select-none">グループ一括設定</h4>
+
+                                    <div class="flex items-center gap-1.5 ml-auto">
+                                        <div class="relative flex items-center">
+                                            <button type="button" onclick="toggleItemColorDropdown(${item.id})" id="item_selected_btn_${item.id}" class="p-2 border border-slate-200 rounded-xl bg-white cursor-pointer flex items-center justify-center min-w-[46px] h-[34px] focus:outline-none shadow-sm transition-colors">
+                                                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                                            </button>
+                                            <input type="hidden" id="item_bulk_group_${item.id}" value="red">
+
+                                            <div id="item_color_menu_${item.id}" class="hidden absolute top-full left-0 mt-1.5 bg-white border border-slate-100 rounded-xl shadow-xl p-1.5 flex flex-col gap-1 z-50 min-w-[46px] items-center">
+                                                <button type="button" onclick="selectItemBulkColor(${item.id}, 'red')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors"><span class="w-3 h-3 rounded-full bg-rose-500"></span></button>
+                                                <button type="button" onclick="selectItemBulkColor(${item.id}, 'blue')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors"><span class="w-3 h-3 rounded-full bg-sky-500"></span></button>
+                                                <button type="button" onclick="selectItemBulkColor(${item.id}, 'green')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors"><span class="w-3 h-3 rounded-full bg-green-500"></span></button>
+                                                <button type="button" onclick="selectItemBulkColor(${item.id}, 'yellow')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors"><span class="w-3 h-3 rounded-full bg-yellow-500"></span></button>
+                                                <button type="button" onclick="selectItemBulkColor(${item.id}, 'purple')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors"><span class="w-3 h-3 rounded-full bg-purple-500"></span></button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex gap-1">
+                                            <button onclick="applyItemBulkMode(${item.id}, 'ratio')" class="px-2 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg border border-indigo-200 cursor-pointer shadow-sm">割り勘</button>
+                                            <button onclick="applyItemBulkMode(${item.id}, 'fixed')" class="px-2 py-1 text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg border border-amber-200 cursor-pointer shadow-sm">固定額</button>
+                                            <button onclick="applyItemBulkMode(${item.id}, 'absent')" class="px-2 py-1 text-[11px] font-bold bg-slate-100 hover:bg-slate-300 text-slate-600 rounded-lg border border-slate-300 cursor-pointer shadow-sm">不参加</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="text-[11px] font-black text-slate-400 tracking-wider uppercase mb-2">個人設定</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    ${memberSettingsHtml}
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
-            </div>
-            `;
+                `;
             container.insertAdjacentHTML('beforeend', itemHtml);
         });
-        calculateSettlement();
+        if (typeof calculateSettlement === 'function') calculateSettlement();
     }
 
     // 画面の入力内容をデータに同期
     function updateItem(index, key, value) {
         if (key === 'total') {
-            items[index][key] = parseInt(value) || 0;
+            items[index][key] = Number(value) || 0;
         } else {
             items[index][key] = value;
         }
@@ -555,11 +945,11 @@
 
     // excelで計算する
     function generateExcel() {
-        let memberRequests = Object.fromEntries(members.map(m => [m, 0]));
-        let memberAdvances = Object.fromEntries(members.map(m => [m, 0]));
+        let memberRequests = Object.fromEntries(members.map(m => [m.name, 0]));
+        let memberAdvances = Object.fromEntries(members.map(m => [m.name, 0]));
 
         // 端数メーター
-        let shadowBalancesExcel = Object.fromEntries(members.map(m => [m, 0]));
+        let shadowBalancesExcel = Object.fromEntries(members.map(m => [m.name, 0]));
         
         // excelの見出し
         let excelHeader = ["メンバー名", "合計請求額", "立替額合計"];
@@ -585,8 +975,8 @@
         members.forEach((m, i) => {
             let rowData = [
                 m, 
-                memberRequests[m],
-                memberAdvances[m]
+                memberRequests[m.name],
+                memberAdvances[m.name]
             ];
         // 各項目の割り勘結果を結合
         allShares.forEach(shares => rowData.push(shares[i]));
@@ -621,7 +1011,38 @@
         </div>
 
         <div class="flex gap-2 mb-4">
+
+            <div class="relative">
+                <!-- selectはiosの文字しか使えないので、自作のプルダウン -->
+                <button type="button" onclick="toggleColorDropdown()" id="selected_group_btn" class="p-2 border border-slate-200 rounded-xl bg-white cursor-pointer flex items-center justify-center min-w-[46px] h-[38px] focus:outline-none shadow-sm">
+                    <span class="w-3 h-3 rounded-full bg-white"></span>
+                </button>
+    
+                <input type="hidden" id="new_member_group" value="none">
+    
+                <div id="color_dropdown_menu" class="hidden absolute top-full left-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 flex flex-col gap-1 z-50 min-w-[50px] items-center">
+                    <button type="button" onclick="selectGroupColor('none')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-white"></span>
+                    </button>
+                    <button type="button" onclick="selectGroupColor('red')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    </button>
+                    <button type="button" onclick="selectGroupColor('blue')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-sky-500"></span>
+                    </button>
+                    <button type="button" onclick="selectGroupColor('green')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    </button>
+                    <button type="button" onclick="selectGroupColor('yellow')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                    </button>
+                    <button type="button" onclick="selectGroupColor('purple')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 cursor-pointer transition-colors">
+                        <span class="w-3 h-3 rounded-full bg-purple-500"></span>                        </button>
+                </div>
+            </div>
+
             <input type="text" id="new_member_name" placeholder="名前を入力" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+            
             <button onclick="addMember()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">追加</button>
         </div>
 
@@ -654,6 +1075,30 @@
         <div class="flex gap-2 justify-end">
             <button onclick="closeItemModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer">キャンセル</button>
             <button onclick="saveNewItem()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">追加</button>
+        </div>
+    </div>
+</div>
+<!-- ポップアップ (履歴) -->
+<div id="history_modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-100 text-slate-800">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">履歴データ</h3>
+            <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl cursor-pointer">×</button>
+
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 mb-4 space-y-3">
+            <h4 class="text-xs font-blaxk text-slate-500 uppercase tracking-wider">現在の状況を履歴に残す</h4>
+            <div class="flex gap-2">
+                <input type="text" id="history_title_input" class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+                <button onclick="saveCurrentToHistory()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
+                    保存
+                </button>
+            </div>
+        </div>
+
+        <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">履歴一覧</h4>
+        <div id="modal_history_list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
         </div>
     </div>
 </div>
