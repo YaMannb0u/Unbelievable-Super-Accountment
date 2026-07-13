@@ -1094,9 +1094,17 @@
         }
     }
 
-    renderItems();
-    calculateSettlement();
-    checkIncomingShareLink();
+    window.onload = function() {
+        renderItems();
+        calculateSettlement();
+        
+        // 0.1秒待ってURLの共有データ読み込む
+        setTimeout(() => {
+            if (typeof checkIncomingShareLink === 'function') {
+                checkIncomingShareLink();
+            }
+        }, 100);
+    };
 
     </script>
 </body>
