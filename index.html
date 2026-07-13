@@ -56,7 +56,7 @@
         </section>
     </main>
 
-    <main id="room_result" class="hidden w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-6">
+    <main id="room_result" class="hidden w-full max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 ">
         <section class="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
             <div>
                 <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
@@ -237,9 +237,12 @@
             const countEl = document.getElementById('member-count');
                 if (countEl) countEl.innerText = `(${members.length}人)`;
             
-                renderItems()
-                calculateSettlement();
+                renderItems();
                 closeHistoryModal();
+
+                setTimeout(() => {
+                calculateSettlement();
+            }, 50);
         }
 
         // 計算部分をwebとexcelで共通化
@@ -1080,9 +1083,11 @@
                 renderItems();
                 calculateSettlement();
 
-                // URLの見た目を綺麗にするため、?data=以下のパワメータを消す
-                window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
-            alert('共有リンクからデータを正常に読み込んだよ');
+                setTimeout(() => {
+                    window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
+                    alert('共有リンクからデータを正常に読み込んだよ');
+                }, 50);
+
             } catch (e) {
                 console.error('データの読み込みに失敗：', e);
             }
