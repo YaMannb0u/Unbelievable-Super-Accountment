@@ -1039,20 +1039,20 @@
         }
 
         const shareData = {
-            m: nenbers,
+            m: members,
             i: items
         }
 
         // データを文字列にして、エンコード
         const jsonStr = JSON.stringify(shareData);
-        const encodedData = btoa(unescape(encodeURICComponent(jsonStr)));
+        const encodedData = btoa(unescape(encodeURIComponent(jsonStr)));
 
         // ベースとなるURLを取得、末尾にデータをくっつける
         const baseUrl = window.location.href.split('?')[0];
-        const shareUrl = '${baseUrl}?data=${encodedData}';
+        const shareUrl = `${baseUrl}?data=${encodedData}`;
 
         // クリップボードにコピー
-        nevigator.clipboard.writeText(shareUrl).then(() => {
+        navigator.clipboard.writeText(shareUrl).then(() => {
             alert('共有用のリンクをコピーしました');
         }).catch(err => {
             prompt('共有用リンクのコピーに失敗しました。以下のURLを直接コピーしてください:\n',shareUrl);
@@ -1061,13 +1061,13 @@
 
     // ページが開かれた瞬間に、URLにデータがあれば自動で読み込む
     function checkIncomingShareLink() {
-        const urlParmas = new URLSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(window.location.search);
         const encodedData = urlParams.get('data');
 
         if (encodedData) {
             try {
                 // でコードしてデータを表示
-                const jsonstr = decodeURIComponent(escape(atob(encodedData)));
+                const jsonStr = decodeURIComponent(escape(atob(encodedData)));
                 const shareData = JSON.parse(jsonStr);
 
                 if (shareData.m) members = shareData.m;
@@ -1082,6 +1082,10 @@
 
                 // URLの見た目を綺麗にするため、?data=以下のパワメータを消す
                 window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
+            alert('共有リンクからデータを正常に読み込んだよ');
+            } catch (e) {
+                // 💡【修正】足りなかった catch ブロックを完璧に補給しました！
+                console.error('データの読み込みに失敗：', e);
             }
         }
     }
