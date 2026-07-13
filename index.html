@@ -1048,7 +1048,9 @@
 
         // データを文字列にして、エンコード
         const jsonStr = JSON.stringify(shareData);
-        const encodedData = btoa(encodeURIComponent(jsonStr));
+        const encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+            return String.fromCharCode(parseInt(p1, 16));
+        }));
 
         // ベースとなるURLを取得、末尾にデータをくっつける
         const baseUrl = window.location.href.split('?')[0];
@@ -1070,7 +1072,11 @@
         if (encodedData) {
             try {
                 // でコードしてデータを表示
-                const jsonStr = decodeURIComponent(escape(atob(encodedData)));
+                const decodedBtoa = atob(decodeURIComponent(encodedData));
+                const jsonStr = decodeURIComponent(Array.prototype.map.call(decodedBtoa, function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
                 const shareData = JSON.parse(jsonStr);
 
                 if (shareData.m) members = shareData.m;
