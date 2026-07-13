@@ -77,12 +77,18 @@
                     </div>
             </section>
 
-            <div class="flex flex-col sm:flex-row gap-2">
-                <input type="text" id="excel_filename" placeholder="ファイル名"
+            <div class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                    <input type="text" id="excel_filename" placeholder="ファイル名"
                     class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none flex-1">
 
-                <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform cursor-pointer text-sm text-center leading-snug whitespace-normal break-words">
-                    Excelファイル<br>ダウンロード
+                    <button onclick="generateExcel()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-4 py-2 rounded-xl shadow-md transition-all transform cursor-pointer text-sm text-center leading-snug whitespace-normal break-words">
+                        Excelファイル<br>ダウンロード
+                    </button>
+                </div>
+
+                <button onclick="generateShareLink()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black font-black px-4 py-3 rounded-xl shadow-md transition-all transform cursor-pointer text-sm text-center flex items-center justify-center gap-2">
+                    共有リンクの作成
                 </button>
             </div>
         </div>
@@ -371,12 +377,29 @@
             let transfer = Math.min(giver.amount, receiver.amount);
 
             if (transfer > 0) {
+                // 固有のチェックボックスID
+                const routeId = `${giver.name}_to_${reciver.name}_${Math.round(transfer)}`;
+
+                if (!items[0].settings) items[0].settings = {};
+                const isChecked = items[0].settings[routeId] === true;
+
                 routes.push(`
-                    <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
-                        <span class="font-bold text-slate-700">${giver.name}</span>
-                        <span class="text-xs text-slate-400 font-bold mx-2"> → </span>
-                        <span class="font-bold text-emerald-600">${receiver.name}</span>
-                        <span class="ml-auto font-black text-slate-900">${transfer.toLocaleString()} 円</span>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm transition-all ${isChecked ? 'opacity-50' : ''}">
+                        <label class="flex items-center gap-3 cursor-pointer w-full select-none">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                                onchange="toggleRouteCheck('${routeId}', this.checked)"
+                                class="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400 cursor-pointer">
+                            
+                            <div class="flex items-center text-sm font-medium ${isChecked ? 'line-through text-slate-400' : 'text-slate-700'}">
+                                <span class="font-black">${giver.name}</span>
+                                <span class="text-xs text-slate-400 font-bold mx-2">➔</span>
+                                <span class="font-black text-emerald-600">${receiver.name}</span>
+                            </div>
+                        </label>
+                        
+                        <span class="ml-auto font-black text-slate-900 text-sm shrink-0 ${isChecked ? 'line-through text-slate-400' : ''}">
+                            ${Math.round(transfer).toLocaleString()} 円
+                        </span>
                     </div>
                 `);
             }
@@ -448,6 +471,18 @@
                 `;
                 bgContainer.insertAdjacentHTML('beforeend', memberRowHtml);
             });
+        }
+    }
+
+    // チェックボックスの処理
+    function toggleRouteCheck(routeId, isChecked) {
+        // itemsが一つでもあればチェック状態を保存
+        if (items.length > 0) {
+            if (!items[0].settings) items[0].settings = {};
+            items[0].settings[routeId] = isChecked;
+
+            renderItems();
+            calculateSettlement();
         }
     }
 
@@ -997,8 +1032,63 @@
         XLSX.writeFile(workbook, `${inputName}.xlsx`);
     }
 
+    function generateShareLink() {
+        if (members.length === 0 && items.length === 0) {
+            alert('データが空だよ');
+            return;
+        }
+
+        const shareData = {
+            m: nenbers,
+            i: items
+        }
+
+        // データを文字列にして、エンコード
+        const jsonStr = JSON.stringify(shareData);
+        const encodedData = btoa(unescape(encodeURICComponent(jsonStr)));
+
+        // ベースとなるURLを取得、末尾にデータをくっつける
+        const baseUrl = window.location.href.split('?')[0];
+        const shareUrl = '${baseUrl}?data=${encodedData}';
+
+        // クリップボードにコピー
+        nevigator.clipboard.writeText(shareUrl).then(() => {
+            alert('共有用のリンクをコピーしました');
+        }).catch(err => {
+            prompt('共有用リンクのコピーに失敗しました。以下のURLを直接コピーしてください:\n',shareUrl);
+        });
+    }
+
+    // ページが開かれた瞬間に、URLにデータがあれば自動で読み込む
+    function checkIncomingShareLink() {
+        const urlParmas = new URLSearchParams(window.location.search);
+        const encodedData = urlParams.get('data');
+
+        if (encodedData) {
+            try {
+                // でコードしてデータを表示
+                const jsonstr = decodeURIComponent(escape(atob(encodedData)));
+                const shareData = JSON.parse(jsonStr);
+
+                if (shareData.m) members = shareData.m;
+                if (shareData.i) items = shareData.i;
+
+                // 画面と計算のリフレッシュ
+                const countEl = document.getElementById('member-count');
+                if (countEl) countEl.innerText = `${members.length}人)`;
+
+                renderItems();
+                calculateSettlement();
+
+                // URLの見た目を綺麗にするため、?data=以下のパワメータを消す
+                window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
+            }
+        }
+    }
+
     renderItems();
     calculateSettlement();
+    checkIncomingShareLink();
 
     </script>
 </body>
