@@ -378,7 +378,7 @@
 
             if (transfer > 0) {
                 // 固有のチェックボックスID
-                const routeId = `${giver.name}_to_${reciver.name}_${Math.round(transfer)}`;
+                const routeId = `${giver.name}_to_${receiver.name}_${Math.round(transfer)}`;
 
                 if (!items[0].settings) items[0].settings = {};
                 const isChecked = items[0].settings[routeId] === true;
@@ -1041,7 +1041,7 @@
         const shareData = {
             m: members,
             i: items
-        }
+        };
 
         // データを文字列にして、エンコード
         const jsonStr = JSON.stringify(shareData);
@@ -1084,7 +1084,6 @@
                 window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
             alert('共有リンクからデータを正常に読み込んだよ');
             } catch (e) {
-                // 💡【修正】足りなかった catch ブロックを完璧に補給しました！
                 console.error('データの読み込みに失敗：', e);
             }
         }
