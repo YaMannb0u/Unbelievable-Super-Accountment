@@ -1054,7 +1054,7 @@
 
         // ベースとなるURLを取得、末尾にデータをくっつける
         const baseUrl = window.location.href.split('?')[0];
-        const shareUrl = `${baseUrl}?data=${encodedData}`;
+        const shareUrl = `${baseUrl}?data=${encodeURIComponent(encodedData)}`;
 
         // クリップボードにコピー
         navigator.clipboard.writeText(shareUrl).then(() => {
@@ -1076,7 +1076,6 @@
                 const jsonStr = decodeURIComponent(Array.prototype.map.call(decodedBtoa, function(c) {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
-                
                 const shareData = JSON.parse(jsonStr);
 
                 if (shareData.m) members = shareData.m;
