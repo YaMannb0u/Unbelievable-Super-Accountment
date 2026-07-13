@@ -1048,7 +1048,7 @@
 
         // データを文字列にして、エンコード
         const jsonStr = JSON.stringify(shareData);
-        const encodedData = btoa(unescape(encodeURIComponent(jsonStr)));
+        const encodedData = btoa(encodeURIComponent(jsonStr));
 
         // ベースとなるURLを取得、末尾にデータをくっつける
         const baseUrl = window.location.href.split('?')[0];
@@ -1084,9 +1084,11 @@
                 calculateSettlement();
 
                 setTimeout(() => {
+                    setTimeout(() => {
+                    renderItems();
+                    calculateSettlement();
                     window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
-                    alert('共有リンクからデータを正常に読み込んだよ');
-                }, 50);
+                }, 100);
 
             } catch (e) {
                 console.error('データの読み込みに失敗：', e);
