@@ -124,24 +124,27 @@
             const btnInput = document.getElementById('tab_input_btn');
             const btnResult = document.getElementById('tab_result_btn');
 
+            const normalStyle = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+            const activeStyle ="px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+
             if (tabName === 'input') {
                 // 入力画面表示
                 roomInput.classList.remove('hidden');
                 roomResult.classList.add('hidden');
                 roomPersonal.classList.add('hidden');
                 // ボタンの見た目をいい感じに
-                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
-                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
-                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+                btnInput.className = activeStyle
+                btnResult.className = normalStyle
+                btnPersonal.className = normalStyle
             } else if (tabName === 'result'){
                 // 結果画面表示
                 roomResult.classList.remove('hidden');
                 roomInput.classList.add('hidden');
                 roomPersonal.classList.add('hidden');
                 // ボタンの見た目をいい感じに
-                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
-                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
-                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+                btnInput.className = normalStyle
+                btnResult.className = ActiveStyle
+                btnPersonal.className = normalStyle
             } else if (tabName === 'personal'){
                 // 結果画面表示
                 roomPersonal.classList.remove('hidden');
@@ -149,10 +152,9 @@
                 roomInput.classList.add('hidden');
                 initPersonalTab();
                 // ボタンの見た目をいい感じに
-                const btnPersonal = document.getElementById('tab_personal_btn');
-                if (btnPersonal) btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
-                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
-                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+                btnInput.className = normalStyle
+                btnResult.className = normalStyle
+                btnPersonal.className = activeStyle
             }
         }
 
