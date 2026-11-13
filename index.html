@@ -99,11 +99,11 @@
 
     <main id="room_personal" class="hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 class="text-lg font-bold text-slate-800">メンバー別 詳細内訳</h2>
                 <div class="flex items-center gap-2">
                     <label class="text-xs font-bold text-slate-500">対象メンバー:</label>
-                    <select id="target_member" onchange="renderPersonalDetail()" class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none"></select>
+                    <select id="personal_target_select" onchange="renderPersonalDetail()" class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none"></select>
                 </div>
             </div>
 
@@ -150,7 +150,7 @@
                 initPersonalTab();
                 // ボタンの見た目をいい感じに
                 const btnPersonal = doccument.getElementById('tab_persoinal_btn');
-                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                if (btnPersonal) btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
                 btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
             }
@@ -1115,7 +1115,7 @@
 
             let isPayer = (payerName === targetName);
             if (isPayer) totalPaid += itemtotal;
-            totalShare += memberShareAmount;
+            totalShare += myShare;
 
             detailsHtml += `
                 <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xm flex items-center justify-between">
