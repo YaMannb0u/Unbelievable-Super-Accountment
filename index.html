@@ -892,9 +892,7 @@
                                     <span class="font-bold text-slate-600 truncate max-w-[75px]">${mName}</span>
                                 </div>
 
-                                <span class ="text-[11px] font-black text-slate-700 bg-white px-1.5 py-0.5 rounded-lg border border-slate-200">
-                                    負担: ${memderShareAmount.toLocaleString()}円
-                                </span>
+                                <span class="text-[11px] text-slate-400">${memderShareAmount.toLocaleString()}円</span>
 
                                 <select ${isLocked} onchange="updateMemberMode(${index}, '${mName}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
                                     <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
