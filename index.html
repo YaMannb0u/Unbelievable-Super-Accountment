@@ -44,7 +44,7 @@
         <button id="tab_result_btn" onclick="switchTab('result')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
             結果
         </button>
-        <button id="tab_result_btn" onclick="switchTab('personal')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
+        <button id="tab_personal_btn" onclick="switchTab('personal')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
             個人精算
         </button>
     </div>
@@ -97,13 +97,13 @@
         </div>
     </main>
 
-    <main id="room_ personal" class="hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <main id="room_personal" class="hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"></div>
                 <h2 class="text-lg font-bold text-slate-800">メンバー別 詳細内訳</h2>
                 <div class="flex items-center gap-2">
                     <label class="text-xs font-bold text-slate-500">対象メンバー:</label>
-                    <select id="target_member" onchange="renderPersonalDatail()" class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none"></select>
+                    <select id="target_member" onchange="renderPersonalDetail()" class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none"></select>
                 </div>
             </div>
 
@@ -132,6 +132,7 @@
                 // ボタンの見た目をいい感じに
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
                 btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
             } else if (tabName === 'result'){
                 // 結果画面表示
                 roomResult.classList.remove('hidden');
@@ -140,14 +141,17 @@
                 // ボタンの見た目をいい感じに
                 btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
             } else if (tabName === 'personal'){
                 // 結果画面表示
                 roomPersonal.classList.remove('hidden');
-                roomResult.classList.remove('hidden');
+                roomResult.classList.add('hidden');
                 roomInput.classList.add('hidden');
                 initPersonalTab();
                 // ボタンの見た目をいい感じに
-                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                const btnPersonal = doccument.getElementById('tab_persoinal_btn');
+                btnPersonal.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
             }
         }
@@ -861,7 +865,7 @@
                         let temoShadow = {};
                         let itemShares = csh(item, temoShadow);
                         let memberIndex = members.findIndex(m => m.name === mName);
-                        let memderShareAmount = (memberIndex !== -1 ? itemShares[memberIndex] : 0);
+                        let memberShareAmount = (memberIndex !== -1 ? itemShares[memberIndex] : 0);
 
                         // 今どのモードなのかを判定
                         let isAbsent = currentSetting === "absent";
@@ -892,7 +896,7 @@
                                     <span class="font-bold text-slate-600 truncate max-w-[75px]">${mName}</span>
                                 </div>
 
-                                <span class="text-[11px] text-slate-400">${memderShareAmount.toLocaleString()}円</span>
+                                <span class="text-[11px] text-slate-400">${memberShareAmount.toLocaleString()}円</span>
 
                                 <select ${isLocked} onchange="updateMemberMode(${index}, '${mName}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
                                     <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
@@ -1073,7 +1077,7 @@
     }
 
     function initPersonalTab() {
-        const selectEl = document.getElementById('personal_ taarget_select');
+        const selectEl = document.getElementById('personal_taarget_select');
         if (!selectEl) return;
 
         const currentVal = selectEl.value;
@@ -1085,7 +1089,7 @@
     function renderPersonalDetail() {
         const container = document.getElementById('personal_detail_container');
         const selectEl = document.getElementById('personal_target_select');
-        if (!container || !selectEl) retuen;
+        if (!container || !selectEl) return;
 
         const targetName = selectEl.value;
         if (!targetName) {
@@ -1113,7 +1117,7 @@
             if (isPayer) totalPaid += itemtotal;
             totalShare += memberShareAmount;
 
-            detailHtml += `
+            detailsHtml += `
                 <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xm flex items-center justify-between">
                     <div>
                         <span class="font-black test-slate-800">${item.name}</span>
