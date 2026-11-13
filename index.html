@@ -44,6 +44,9 @@
         <button id="tab_result_btn" onclick="switchTab('result')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
             結果
         </button>
+        <button id="tab_result_btn" onclick="switchTab('personal')" class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 transition-all cursor-pointer hover:text-slate-500">
+            個人精算
+        </button>
     </div>
 
     <main id="room_input" class="max-w-full mx-auto px-4 py-8 space-y-8">
@@ -94,6 +97,21 @@
         </div>
     </main>
 
+    <main id="room_ personal" class="hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"></div>
+                <h2 class="text-lg font-bold text-slate-800">メンバー別 詳細内訳</h2>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-slate-500">対象メンバー:</label>
+                    <select id="target_member" onchange="renderPersonalDatail()" class="p-2 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:outline-none"></select>
+                </div>
+            </div>
+
+            <div id="personal_detail_container" class="space-y-4">
+            </div>
+        </section>
+    </main>
+
     <script>
 
         // ここからJavaScript
@@ -102,6 +120,7 @@
         function switchTab(tabName) {
             const roomInput = document.getElementById('room_input');
             const roomResult = document.getElementById('room_result');
+            const roomPersonal = document.getElementById('room_personal');
             const btnInput = document.getElementById('tab_input_btn');
             const btnResult = document.getElementById('tab_result_btn');
 
@@ -109,13 +128,24 @@
                 // 入力画面表示
                 roomInput.classList.remove('hidden');
                 roomResult.classList.add('hidden');
+                roomPersonal.classList.add('hidden');
                 // ボタンの見た目をいい感じに
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
                 btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
-            } else {
+            } else if (tabName === 'result'){
                 // 結果画面表示
                 roomResult.classList.remove('hidden');
                 roomInput.classList.add('hidden');
+                roomPersonal.classList.add('hidden');
+                // ボタンの見た目をいい感じに
+                btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
+                btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+            } else if (tabName === 'personal'){
+                // 結果画面表示
+                roomPersonal.classList.remove('hidden');
+                roomResult.classList.remove('hidden');
+                roomInput.classList.add('hidden');
+                initPersonalTab();
                 // ボタンの見た目をいい感じに
                 btnResult.className = "px-6 py-3 font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 transition-all cursor-pointer";
                 btnInput.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
@@ -828,6 +858,11 @@
 
                         let currentSetting = item.settings[mName];
 
+                        let temoShadow = {};
+                        let itemShares = csh(item, temoShadow);
+                        let memberIndex = members.findIndex(m => m.name === mName);
+                        let memderShareAmount = (memberIndex !== -1 ? itemShares[memberIndex] : 0);
+
                         // 今どのモードなのかを判定
                         let isAbsent = currentSetting === "absent";
                         let isFixed = (typeof currentSetting === "object" && currentSetting.type === "fixed");
@@ -856,6 +891,10 @@
                                     <span class="w-2 h-2 rounded-full ${mColorClass} shrink-0"></span>
                                     <span class="font-bold text-slate-600 truncate max-w-[75px]">${mName}</span>
                                 </div>
+
+                                <span class ="text-[11px] font-black text-slate-700 bg-white px-1.5 py-0.5 rounded-lg border border-slate-200">
+                                    負担: ${memderShareAmount.toLocaleString()}円
+                                </span>
 
                                 <select ${isLocked} onchange="updateMemberMode(${index}, '${mName}', this.value)" class="p-1 border border-slate-300 rounded bg-slate-100 text-[11px] font-bold cursor-pointer">
                                     <option value="split" ${isSplit ? 'selected' : ''}>割り勘</option>
@@ -991,7 +1030,7 @@
         
         // excelの見出し
         let excelHeader = ["メンバー名", "合計請求額", "立替額合計"];
-        items.forEach(item=> excelHeader.push(`【内訳】${item.name}`));
+        items.forEach(item => excelHeader.push(`【内訳】${item.name}`));
 
         let excelData = [excelHeader];
         
@@ -1033,6 +1072,86 @@
             inputName = `精算表_${today}`;
         } 
         XLSX.writeFile(workbook, `${inputName}.xlsx`);
+    }
+
+    function initPersonalTab() {
+        const selectEl = document.getElementById('personal_ taarget_select');
+        if (!selectEl) return;
+
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = members.map(m => `<option value="${m.name}" ${m.name === currentVal ? 'selected' : ''}>${m.name}</option>`).join('');
+
+        renderPersonalDetail();
+    }
+
+    function renderPersonalDetail() {
+        const container = document.getElementById('personal_detail_container');
+        const selectEl = document.getElementById('personal_target_select');
+        if (!container || !selectEl) retuen;
+
+        const targetName = selectEl.value;
+        if (!targetName) {
+            container.innerHTML = `<p class="text-slate-400 test-xs italic text-center py-4">メンバーがいません</p>`;
+            return;
+        }
+
+        let html = '';
+        let totalPaid = 0;
+        let totalShare = 0;
+
+        let detailsHtml = '';
+
+        // 各項目をループして、その人がいくら立替、負担しているか
+        items.forEach(item => {
+            const itemTotal = Number(item.total) || 0;
+            const payerName = (item.payer && typeof item.payer === 'object') ? item.payer.name : item.payer;
+
+            let tempShadow = {};
+            let shares = csh(item, tempShadow);
+            let mIndex = members.findIndex(m => m.name === targetName);
+            let myShare = (mIndex !== -1) ? shares[mIndex] : 0;
+
+            let isPayer = (payerName === targetName);
+            if (isPayer) totalPaid += itemtotal;
+            totalShare += memberShareAmount;
+
+            detailHtml += `
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xm flex items-center justify-between">
+                    <div>
+                        <span class="font-black test-slate-800">${item.name}</span>
+                        <div class="text-xs text-slate-400">
+                            項目総額: ${itemTotal.toLocaleString()}円/ 立替人: ${payerName}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-black text-emerald-600"> 負担: ${myShare.toLocaleString()}円</div>
+                        ${isPayer ? `<span class="text-[10px] text-emerald-700 px-1.5 py-0.5 rounded font-bold">全額立替</span>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        if (items.length === 0) {
+            detailsHtml = `<p class="text-slate-400 text-xs italic text-center py-4">項目が登録されていません</p>`;
+        }
+
+        container.innerHTML = `
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
+                        <span class="text-xs font-bold text-emerald-600">総立替額 (支払った金額)</span>
+                        <div class="text-xl font-black text-emerald-800">${totalPaid.toLocaleString()} 円</div>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-500">総負担額 (本来払うべき額)</span>
+                        <div class="text-xl font-black text-slate-800">${totalShare.toLocaleString()} 円</div>
+                    </div>
+                </div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">項目の内訳</h4>
+                <div class="space-y-2">
+                    ${detailsHtml}
+                </div>
+            `;
     }
 
     function generateShareLink() {
