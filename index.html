@@ -1143,12 +1143,16 @@
         container.innerHTML = `
             <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
-                        <span class="text-xs font-bold text-emerald-600">総立替額 (支払った金額)</span>
+                        <span class="text-xs font-bold text-emerald-600">立替総額</span>
                         <div class="text-xl font-black text-emerald-800">${totalPaid.toLocaleString()} 円</div>
                     </div>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                        <span class="text-xs font-bold text-slate-500">総負担額 (本来払うべき額)</span>
+                        <span class="text-xs font-bold text-slate-500">総負担額</span>
                         <div class="text-xl font-black text-slate-800">${totalShare.toLocaleString()} 円</div>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                        <span class="text-xs font-bold text-slate-500">最終収支</span>
+                        <div class="text-xl font-black text-slate-800">${balanceText.toLocaleString()} 円</div>
                     </div>
                 </div>
                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">項目の内訳</h4>
