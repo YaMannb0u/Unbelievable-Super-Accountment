@@ -1140,6 +1140,20 @@
             detailsHtml = `<p class="text-slate-400 text-xs italic text-center py-4">項目が登録されていません</p>`;
         }
 
+        let balanceText = totalPaid - totalShare;
+        let balanceColor = 'text-slate-800';
+        let balanceDisplay = '';
+
+        if (balanceText > 0) {
+            balanceColor = 'text-emerald-600';
+            balanceDisplay = `+${balanceText.toLocaleString()} 円 (受け取る)`;
+        } else if (balanceText < 0) {
+            balanceColor = 'text-rose-600';
+            balanceDisplay = `-${Math.abs(balanceText).toLocaleString()} 円 (支払う)`;
+        } else {
+            balanceDisplay = `0 円`;
+        }
+
         container.innerHTML = `
             <div class="grid grid-cols-3 gap-4 mb-4">
                     <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
@@ -1152,7 +1166,7 @@
                     </div>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
                         <span class="text-xs font-bold text-slate-500">最終収支</span>
-                        <div class="text-xl font-black text-slate-800">${balanceText.toLocaleString()} 円</div>
+                        <div class="text-xl font-black ${balanceColor}">${balanceDisplay}">${balanceText.toLocaleString()} 円</div>
                     </div>
                 </div>
                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">項目の内訳</h4>
